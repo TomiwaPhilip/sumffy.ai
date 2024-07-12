@@ -8,7 +8,6 @@ export interface SessionData {
   image?: string;
   isPremium?: boolean;
   isOnboarded?: boolean;
-  isVerified?: boolean;
   isLoggedIn: boolean;
 }
 

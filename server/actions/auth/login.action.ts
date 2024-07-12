@@ -23,7 +23,7 @@ export async function signIn(email: string) {
 
     console.log(token)
 
-    const url = `https://personal-mileston.vercel.app/auth/verify?token=${token}`;
+    const url = `https://shiny-space-meme-v9r7vxj9q74hxx4-3000.app.github.dev/auth/verify?token=${token}`;
 
     // Send email with resend.dev
     await sendVerificationRequest({ url: url, email: email });
@@ -90,7 +90,6 @@ export async function verifyUserTokenAndLogin(token: string) {
           image: existingUser.image, // Initialize image as an empty string
           isPremium: existingUser.premium,
           isOnboarded: existingUser.onboarded,
-          isVerified: existingUser.verified,
           isLoggedIn: true,
         };
 
@@ -122,7 +121,6 @@ export async function verifyUserTokenAndLogin(token: string) {
           email: newUser.email,
           isPremium: newUser.premium,
           isOnboarded: newUser.onboarded,
-          isVerified: newUser.verified,
           isLoggedIn: true,
         };
 

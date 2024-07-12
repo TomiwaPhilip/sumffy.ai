@@ -24,9 +24,13 @@ const UserSchema = new Schema({
     type: Boolean,
     default: false,
   },
-  verified: {
+  premium: {
     type: Boolean,
     default: false,
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now()
   },
   loginType: {
     type: String,

@@ -51,7 +51,6 @@ export async function GET(req: NextRequest, res: NextResponse) {
           image: existingUser.image, // Initialize image as an empty string
           isPremium: existingUser.premium,
           isOnboarded: existingUser.onboarded,
-          isVerified: existingUser.verified,
           isLoggedIn: true,
         };
 
@@ -108,7 +107,6 @@ export async function GET(req: NextRequest, res: NextResponse) {
           image: newUser.image,
           isPremium: existingUser.premium,
           isOnboarded: newUser.onboarded,
-          isVerified: newUser.verified,
           isLoggedIn: true,
         };
 

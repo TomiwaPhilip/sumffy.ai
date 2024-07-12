@@ -41,7 +41,7 @@ interface CardProps {
   
     return (
       <div
-        className={`fixed top-5 right-5 p-3 rounded-md text-white flex items-center ${type === "error" ? "bg-[#B862B0]" : "bg-[#7A7D93]"
+        className={`fixed top-5 right-5 p-3 rounded-md text-white flex items-center ${type === "error" ? "bg-[#7A7D93]" : "bg-[#B862B0]"
           } ${isVisible ? "opacity-100" : "opacity-0"} transition-opacity duration-300`}
       >
         <div className="flex-shrink-0 mr-3">

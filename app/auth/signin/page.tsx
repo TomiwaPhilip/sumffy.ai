@@ -6,7 +6,7 @@ export default function Page() {
     <div className="text-center">
       <h1 className="font-bold text-[36px]">Sign to your Account</h1>
       <p className="font-regular text-[16px]">
-        Enter your email address to continue to Mileston
+        Enter your email address to continue to Sumffy
       </p>
       <EmailForm />
       <div className="flex items-center my-6">

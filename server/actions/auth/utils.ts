@@ -13,7 +13,7 @@ export const sendVerificationRequest = async (
   try {
     const resend = new Resend(process.env.RESEND_KEY!);
     await resend.emails.send({
-      from: "onboarding@mileston.co",
+      from: "onboarding@xperiencedtekie.pro",
       to: params.email,
       subject: "Login Link to your Account",
       html:
@@ -38,7 +38,7 @@ export async function saveSession(session: SessionData): Promise<void> {
   existingSession.lastName = session.lastName;
   existingSession.image = session.image;
   existingSession.isOnboarded = session.isOnboarded;
-  existingSession.isVerified = session.isVerified;
+  existingSession.isPremium = session.isPremium;
   existingSession.isLoggedIn = session.isLoggedIn;
 
   // Save the session
