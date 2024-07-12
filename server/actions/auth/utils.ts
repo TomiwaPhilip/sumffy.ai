@@ -7,6 +7,7 @@ interface SendVerificationRequestParams {
   url: string;
   email: string;
 }
+
 export const sendVerificationRequest = async (
   params: SendVerificationRequestParams,
 ) => {
