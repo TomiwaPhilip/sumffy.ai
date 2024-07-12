@@ -14,3 +14,7 @@ body {
   margin: 0;
   overflow-x: hidden;
 }
+
+.cards-bg {
+  background-color: #090A15;
+}

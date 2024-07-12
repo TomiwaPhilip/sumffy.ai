@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+
 import "./../globals.css";
+import { Card } from "@/components/shared/Reusables";
 
 
 export const metadata: Metadata = {
@@ -14,7 +16,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body className="bg-[#01020C] text-white">
+        <main className="h-screen flex items-center justify-center">
+          <Card>{children}</Card>
+        </main>
+      </body>
     </html>
   );
 }
