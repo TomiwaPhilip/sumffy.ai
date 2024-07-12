@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 import "./../globals.css";
-import { Card } from "@/components/shared/Reusables";
+import { Card } from "@/components/shared/reusables";
 
 
 export const metadata: Metadata = {
