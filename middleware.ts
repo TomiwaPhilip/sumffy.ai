@@ -7,7 +7,7 @@ import {
   authRoutes,
   publicRoutes,
 } from "@/routes";
-import getSession from "./server/actions/server-hooks/getsession.action";
+import getSession from "./server/session/session.action";
 
 // This function can be marked `async` if using `await` inside
 export async function middleware(request: NextRequest) {
