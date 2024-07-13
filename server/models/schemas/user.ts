@@ -14,7 +14,28 @@ const UserSchema = new Schema({
     type: String,
     // required: [true, 'Lastname is required!'],
   },
-  phoneNumber: {
+  skills: {
+    type: String,
+  },
+  interests: {
+    type: String,
+  },
+  jobTitle: {
+    type: String,
+  },
+  relationshipStatus: {
+    type: String,
+  },
+  shortTermGoal: {
+    type: String,
+  },
+  longTermGoal: {
+    type: String,
+  },
+  shortBio: {
+    type: String,
+  },
+  preferences: {
     type: String,
   },
   image: {
@@ -29,6 +50,10 @@ const UserSchema = new Schema({
     default: false,
   },
   createdAt: {
+    type: Date,
+    default: Date.now()
+  },
+  updatedAt: {
     type: Date,
     default: Date.now()
   },

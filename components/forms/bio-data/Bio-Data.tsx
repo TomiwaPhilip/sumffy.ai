@@ -3,17 +3,17 @@
 import { NoOutlineButtonBig } from '@/components/shared/buttons';
 import React, { useState, ChangeEvent, FormEvent } from 'react';
 
-type FormData = {
+export type FormData = {
     firstName: string;
     lastName: string;
     skills: string;
     interests: string;
-    jobTitle: string;
-    relationshipStatus: string;
-    shortTermGoal: string;
-    longTermGoal: string;
-    shortBio: string;
-    preferences: string;
+    jobTitle?: string;
+    relationshipStatus?: string;
+    shortTermGoal?: string;
+    longTermGoal?: string;
+    shortBio?: string;
+    preferences?: string;
 };
 
 type Errors = Partial<FormData>;
@@ -55,7 +55,7 @@ export default function BioDataForm() {
         return newErrors;
     };
 
-    const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const validationErrors = validate();
         setErrors(validationErrors);
