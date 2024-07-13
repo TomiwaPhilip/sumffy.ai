@@ -207,3 +207,17 @@ export function Loaders() {
     </div>
   )
 }
+
+interface IntroCardProps {
+  headingText: string;
+  paragraph: string;
+}
+
+export function IntroCards({ headingText, paragraph }: IntroCardProps) {
+  return (
+    <div className="p-5 bg-[#090A15] rounded-xl">
+      <h1 className="text-[24px] text-[#4B37BF] font-semibold">{headingText}</h1>
+      <p className="text-[16px] text-[#A1A3B0]">{paragraph}</p>
+    </div>
+  );
+}

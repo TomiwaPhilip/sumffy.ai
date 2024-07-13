@@ -1,0 +1,51 @@
+"use client";
+
+import Image from "next/image";
+import { useSession } from "../shared/session";
+import { IntroCards } from "../shared/reusables";
+import { CardData } from "@/constants/cards";
+import Chat from "../forms/chat/ChatForm";
+
+export default function Home() {
+  const session = useSession();
+  const firstName = session?.firstName;
+  const lastName = session?.lastName;
+
+  return (
+    <div className="">
+      <div className="flex items-center justify-between">
+        <div className="">
+          <h1 className="text-gradient text-[36px] font-extrabold">
+            Hello, {firstName} {lastName}
+          </h1>
+          <p className="text-[24px] text-[#A1A3B0] font-semibold">
+            How are you doing today?
+          </p>
+        </div>
+        <div className="">
+          <button className="bg-[#4B37BF] text-[24px] font-semibold flex items-center justify-center gap-3 p-2 rounded-xl">
+            <Image
+              src={"/assets/icons/menu_open.svg"}
+              alt="menu"
+              height={50}
+              width={50}
+            />
+            Suggestions
+          </button>
+        </div>
+      </div>
+      <div className="flex items-start justify-center gap-10 mt-10">
+        {CardData.map((card, index) => (
+          <IntroCards
+            key={index}
+            headingText={card.headingText}
+            paragraph={card.paragraph}
+          />
+        ))}
+      </div>
+      <div className="mt-10">
+        <Chat />
+      </div>
+    </div>
+  );
+}
