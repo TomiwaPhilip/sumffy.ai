@@ -41,7 +41,7 @@ export function NoOutlineButtonBig({
   return (
     <button
       type={type}
-      className="mt-5 w-full bg-[#4B37BF] rounded-lg py-4 flex items-center justify-center text-center"
+      className="mt-5 gradient-to-right rounded-lg p-4 flex items-center justify-center text-center"
       disabled={disabled}
       onClick={onclick}
     >

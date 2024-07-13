@@ -55,3 +55,15 @@ body {
 .gradient-to-bottom {
   background: linear-gradient(180deg, #4B37BF, #7F69FF, #B862B0);
 }
+
+.gradient-to-right {
+  background: linear-gradient(90deg, #4B37BF, #7F69FF, #B862B0);
+}
+
+.text-gradient {
+  background: linear-gradient(180deg, #4B37BF, #7474B4, #B862B0);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-fill-color: transparent;
+}
