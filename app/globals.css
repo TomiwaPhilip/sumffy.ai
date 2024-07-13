@@ -18,3 +18,40 @@ body {
 .cards-bg {
   background-color: #090A15;
 }
+
+*:has(.gradient-border),
+*:has(.gradient-border1) {
+  isolation: isolate;
+}
+
+.normal-gradient-border {
+  position: relative;
+  background-color: inherit;
+}
+.normal-gradient-border::before {
+  content: "";
+  position: absolute;
+  inset: -1px -1px -1px -1px;
+  z-index: -1;
+  background-image: linear-gradient(90deg, #1f2129 0%, #979eb8 100%);
+  border-radius: inherit;
+}
+
+.gradient-border,
+.gradient-border1 {
+  position: relative;
+  background-color: inherit;
+}
+.gradient-border:hover::before,
+.gradient-border1::before {
+  content: "";
+  position: absolute;
+  inset: -1px -1px -1px -1px;
+  z-index: -1;
+  background-image: linear-gradient(90deg, #1F2129 0%, #979EB8 100%);
+  border-radius: inherit;
+}
+
+.gradient-to-bottom {
+  background: linear-gradient(180deg, #4B37BF, #7F69FF, #B862B0);
+}

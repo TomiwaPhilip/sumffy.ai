@@ -45,15 +45,15 @@ export function Nav() {
 
 
   return (
-    <div className="flex justify-center items-center gap-4">
-      <div className="bg-[#0E1018] p-4 rounded-full border border-[#131621]">
+    <div className="flex justify-between items-center w-full xl:flex xl:justify-center xl:items-center xl:gap-4 xl:w-full">
+      <div className="bg-[#090A15] p-4 rounded-full border border-[#2E3142]">
         <ul className="flex items-center gap-10">
           <li
             className={`gradient-border rounded-full ${pathname === "/" ? "normal-gradient-border" : ""}`}
           >
             <Link
               href="/"
-              className={"flex items-center gap-2 bg-[#0E1018] rounded-full p-2"}
+              className={"flex items-center gap-2 bg-[#090A15] rounded-full p-2"}
             >
               <Image
                 src="/assets/icons/add_home.svg"
@@ -65,27 +65,27 @@ export function Nav() {
             </Link>
           </li>
           <li
-            className={`gradient-border rounded-full ${pathname === "/payments" ? "normal-gradient-border" : ""}`}
+            className={`gradient-border rounded-full ${pathname === "/to-do" ? "normal-gradient-border" : ""}`}
           >
             <Link
-              href="/payments"
-              className={"flex items-center gap-2 bg-[#0E1018] p-2 rounded-full"}
+              href="/to-do"
+              className={"flex items-center gap-2 bg-[#090A15] p-2 rounded-full"}
             >
               <Image
-                src="/assets/icons/monetization_on.svg"
-                alt="payments_icon"
+                src="/assets/icons/book.svg"
+                alt="todo_icon"
                 height={25}
                 width={25}
               />
-              Payments
+              To-Do
             </Link>
           </li>
           <li
-            className={`gradient-border rounded-full ${pathname === "/settings" ? "normal-gradient-border" : ""}`}
+            className={`gradient-border rounded-full ${pathname === "/bio-data" ? "normal-gradient-border" : ""}`}
           >
             <Link
-              href="/settings"
-              className={"flex items-center gap-2 bg-[#0E1018] rounded-full p-2"}
+              href="/bio-data"
+              className={"flex items-center gap-2 bg-[#090A15] rounded-full p-2"}
             >
               <Image
                 src="/assets/icons/admin_panel_settings.svg"
@@ -93,15 +93,15 @@ export function Nav() {
                 height={25}
                 width={25}
               />
-              Settings
+              Bio-Data
             </Link>
           </li>
         </ul>
       </div>
-      <div className="relative bg-[#0E1018] p-4 rounded-full border border-[#131621]">
+      <div className="relative bg-[#090A15] p-4 rounded-full border border-[#2E3142]">
         <button
           onClick={() => setDropdownOpen(!dropdownOpen)}
-          className="flex items-center gap-2 bg-[#0E1018] p-2 rounded-full"
+          className="flex items-center gap-2 bg-[#090A15] p-2 rounded-full"
         >
           <Image
             src={user.profileImage}
@@ -119,7 +119,7 @@ export function Nav() {
           />
         </button>
         {dropdownOpen && (
-          <div className="absolute right-0 mt-2 w-48 bg-[#0E1018] rounded-full shadow-lg">
+          <div className="absolute right-0 mt-2 w-48 bg-[#090A15] rounded-full shadow-lg">
             <button
               onClick={() => handleSignOut()}
               className="block w-full text-left px-4 py-2 text-sm text-white"
@@ -128,6 +128,20 @@ export function Nav() {
             </button>
           </div>
         )}
+      </div>
+      <div className="relative">
+        <button
+          className="flex items-center gap-2 gradient-to-bottom py-5 px-7 rounded-full"
+        >
+          <Image
+            src={"/assets/icons/award_star.svg"}
+            alt="premium_icon"
+            height={25}
+            width={25}
+            className="rounded-full"
+          />
+          Premium
+        </button>
       </div>
     </div>
   );
