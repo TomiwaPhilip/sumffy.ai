@@ -27,23 +27,6 @@ export default function BioData() {
         fetchData();
     }, []);
 
-    // Helper function to check if object matches FormData structure
-    const isFormData = (data: any): data is FormData => {
-        return (
-            typeof data === 'object' &&
-            typeof data.firstName === 'string' &&
-            typeof data.lastName === 'string' &&
-            typeof data.skills === 'string' &&
-            typeof data.interests === 'string' &&
-            (typeof data.jobTitle === 'string' || data.jobTitle === "") &&
-            (typeof data.relationshipStatus === 'string' || data.relationshipStatus === "") &&
-            (typeof data.shortTermGoal === 'string' || data.shortTermGoal === "") &&
-            (typeof data.longTermGoal === 'string' || data.longTermGoal === "") &&
-            (typeof data.shortBio === 'string' || data.shortBio === "") &&
-            (typeof data.preferences === 'string' || data.preferences === "")
-        );
-    };
-
     return (
         <div className="">
             <h1 className="text-gradient text-[36px] font-extrabold">Let&apos;s get to know you!</h1>
