@@ -1,5 +1,7 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState } from "react";
+import { AudioRecorder } from 'react-audio-voice-recorder';
 import Image from "next/image";
+import { upload } from "@vercel/blob/client";
 
 type Message = {
   text?: string;
@@ -10,78 +12,36 @@ type Message = {
 const Chat: React.FC = () => {
   const [inputText, setInputText] = useState<string>("");
   const [isRecording, setIsRecording] = useState<boolean>(false);
-  const [recordingDuration, setRecordingDuration] = useState<number>(0);
   const [messages, setMessages] = useState<Message[]>([]);
-  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
-  const [audioChunks, setAudioChunks] = useState<Blob[]>([]);
-  const recordingIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const recordingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  useEffect(() => {
-    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-      navigator.mediaDevices.getUserMedia({ audio: true })
-        .then(stream => {
-          const recorder = new MediaRecorder(stream);
-          setMediaRecorder(recorder);
-
-          recorder.ondataavailable = (e) => {
-            if (e.data && e.data.size > 0) {
-              setAudioChunks(prev => [...prev, e.data]);
-            }
-          };
-  
-          recorder.onstop = () => {
-            const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-            const audioUrl = URL.createObjectURL(audioBlob);
-            console.log('Generated Blob URL:', audioUrl); // Log the Blob URL
-            setMessages(prevMessages => [...prevMessages, { type: 'audio', audioUrl }]);
-            setAudioChunks([]);
-          };
-        })
-        .catch(err => console.error("Error accessing media devices.", err));
-    }
-  }, [audioChunks, messages]);
 
   const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInputText(e.target.value);
   };
 
-  const startRecording = () => {
-    setIsRecording(true);
-    setRecordingDuration(0);
-    if (mediaRecorder) {
-      mediaRecorder.start();
+  const uploadAudio = async (blob: Blob) => {
+    // Replace with your actual upload URL and fetch logic
+    try {
+      const newBlob = await upload("audiorecording.webm", blob, {
+        access: 'public',
+        handleUploadUrl: '/api/avatar/upload',
+        contentType: 'webm',
+      });
+
+      if (newBlob.url) {
+        return newBlob.url; // Assuming the response contains the uploaded file URL
+      } else {
+        console.error('Upload failed');
+      }
+    } catch (error) {
+      console.error('Upload error:', error);
     }
-    recordingIntervalRef.current = setInterval(() => {
-      setRecordingDuration((prev) => prev + 1);
-    }, 1000);
   };
 
-  const stopRecording = () => {
+  const addAudioMessage = async (blob: Blob) => {
+    const audioUrl = await uploadAudio(blob);
+    console.log('Generated Blob URL:', audioUrl); // Log the Blob URL
+    setMessages(prevMessages => [...prevMessages, { type: 'audio', audioUrl }]);
     setIsRecording(false);
-    if (recordingIntervalRef.current) {
-      clearInterval(recordingIntervalRef.current);
-    }
-    if (mediaRecorder) {
-      mediaRecorder.stop();
-    }
-    alert("Audio uploaded successfully!");
-    console.log(messages)
-  };
-
-  const handleLongPress = () => {
-    recordingTimeoutRef.current = setTimeout(() => {
-      startRecording();
-    }, 1000); // Start recording after 3 seconds
-  };
-
-  const handleMouseUp = () => {
-    if (recordingTimeoutRef.current) {
-      clearTimeout(recordingTimeoutRef.current);
-    }
-    if (isRecording) {
-      stopRecording();
-    }
   };
 
   const sendMessage = () => {
@@ -110,40 +70,41 @@ const Chat: React.FC = () => {
       </div>
       <div className="relative">
         {!isRecording ? (
-          <textarea
-            className="w-full p-4 bg-[#10111C] border-2 border-[#7A7D93] rounded-lg focus:outline-none focus:ring-[#E0E0E0] focus:border-[#E0E0E0] sm:text-sm placeholder-[#464D67]"
-            placeholder="Type your message..."
-            value={inputText}
-            onChange={handleTextChange}
-          />
-        ) : (
-          <div className="w-full p-4 bg-[#10111C] border-2 border-[#7A7D93] rounded-lg flex items-center justify-between">
-            <span className="text-[#E0E0E0]">Recording... {recordingDuration}s</span>
-            <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
-          </div>
-        )}
-        <button
-          className="absolute right-3 top-3 bg-blue-500 text-white p-2 rounded-full"
-          onMouseDown={handleLongPress}
-          onMouseUp={handleMouseUp}
-          onClick={inputText ? sendMessage : undefined}
-        >
-          {inputText ? (
-            <Image
-              src="/assets/icons/sumffy.svg"
-              alt="send_icon"
-              height={20}
-              width={20}
+          <>
+            <textarea
+              className="w-full p-4 bg-[#10111C] border-2 border-[#7A7D93] rounded-lg focus:outline-none focus:ring-[#E0E0E0] focus:border-[#E0E0E0] sm:text-sm placeholder-[#464D67]"
+              placeholder="Type your message..."
+              value={inputText}
+              onChange={handleTextChange}
             />
-          ) : (
-            <Image
-              src="/assets/icons/mic.svg"
-              alt="microphone_icon"
-              height={20}
-              width={20}
-            />
-          )}
-        </button>
+            <button
+              className="absolute right-3 top-3 bg-blue-500 text-white p-2 rounded-full"
+              onClick={inputText ? sendMessage : undefined}
+            >
+              {inputText ? (
+                <Image
+                  src="/assets/icons/sumffy.svg"
+                  alt="send_icon"
+                  height={20}
+                  width={20}
+                />
+              ) : (
+                <AudioRecorder
+                  onRecordingComplete={addAudioMessage}
+                  audioTrackConstraints={{
+                    noiseSuppression: true,
+                    echoCancellation: true,
+                  }}
+                  classes={{
+                    AudioRecorderStartSaveClass: "bg-blue-500 text-white p-2 rounded-full",
+                    AudioRecorderPauseResumeClass: "bg-blue-500 text-white p-2 rounded-full",
+                    AudioRecorderStatusClass: "text-white",
+                  }}
+                />
+              )}
+            </button>
+          </>
+        ) : null}
       </div>
     </div>
   );
