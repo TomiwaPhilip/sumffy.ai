@@ -5,7 +5,7 @@ import { useState } from "react";
 import { RiLoader4Line } from "react-icons/ri";
 import { useSearchParams } from "next/navigation";
 import { verifyUserTokenAndLogin } from "@/server/actions/auth/login.action";
-import { NoOutlineButtonBig } from "@/components/shared/buttons";
+import { NoOutlineButtonBig, NoOutlineButtonBigNoGradient } from "@/components/shared/buttons";
 
 export default function VerifyPage() {
   const searchParams = useSearchParams();
@@ -51,7 +51,7 @@ export default function VerifyPage() {
         <p className="text-center text-xl font-bold p-5">{verifyResult}</p>
       )}
       <span onClick={handleVerify}>
-        <NoOutlineButtonBig type="button" name="Verify Me" disabled={loading} />
+        <NoOutlineButtonBigNoGradient type="button" name="Verify Me" disabled={loading} />
       </span>
     </main>
   );

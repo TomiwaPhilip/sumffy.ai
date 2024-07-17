@@ -4,7 +4,7 @@ import { signIn } from "@/server/actions/auth/login.action";
 import React, { useState } from "react";
 
 import { StatusMessage } from "@/components/shared/reusables";
-import { NoOutlineButtonBig } from "../../shared/buttons";
+import { NoOutlineButtonBig, NoOutlineButtonBigNoGradient } from "../../shared/buttons";
 
 const EmailForm = () => {
   const [email, setEmail] = useState("");
@@ -55,7 +55,7 @@ const EmailForm = () => {
             <span className="text-red-500 text-left text-sm">{error}</span>
           )}
         </div>
-        <NoOutlineButtonBig
+        <NoOutlineButtonBigNoGradient
           type="submit"
           name="Continue with Email"
           loading={loading}

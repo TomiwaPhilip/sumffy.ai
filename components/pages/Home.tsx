@@ -4,9 +4,13 @@ import Image from "next/image";
 import { useSession } from "../shared/session";
 import { IntroCards } from "../shared/reusables";
 import { CardData } from "@/constants/cards";
-import Chat from "../forms/chat/ChatForm";
+import Chat from "../forms/chat/ChatForm"; // Assuming ChatForm is where Chat component is defined
 
-export default function Home() {
+interface HomeProps {
+  chatId?: string; // Define chatId as an optional prop
+}
+
+export default function Home({ chatId }: HomeProps) {
   const session = useSession();
   const firstName = session?.firstName;
   const lastName = session?.lastName;
@@ -44,7 +48,7 @@ export default function Home() {
         ))}
       </div>
       <div className="mt-10">
-        <Chat />
+        <Chat chatId={chatId} /> {/* Pass chatId as a prop to Chat component */}
       </div>
     </div>
   );

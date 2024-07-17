@@ -7,6 +7,7 @@ import Link from "next/link";
 import { signOut } from "@/server/actions/auth/login.action";
 import { usePathname } from "next/navigation";
 import { useSession } from "./session";
+import AudioPlayer from "../forms/chat/AudioPlayer";
 
 export function Nav() {
   const pathname = usePathname();
@@ -221,3 +222,65 @@ export function IntroCards({ headingText, paragraph }: IntroCardProps) {
     </div>
   );
 }
+
+
+interface MessageComponentProps {
+  message: string;
+  userType: 'ai' | 'user';
+  messageType: 'text' | 'audio';
+  audioUrl?: string;
+}
+
+export const MessageComponent: React.FC<MessageComponentProps> = ({ message, userType, messageType, audioUrl }) => {
+  const aiImagePath = '/assets/icons/sumffy.svg';
+  const defaultImagePath = '/assets/images/profilepic.png';
+  const session = useSession();
+  const userImage = session?.image;
+
+  const getUserImage = () => {
+    if (userType === 'ai') {
+      return aiImagePath;
+    } else if (userImage) {
+      return userImage;
+    } else {
+      return defaultImagePath;
+    }
+  };
+
+  return (
+    <div className="flex items-start space-x-4">
+      <img
+        src={getUserImage()}
+        alt="User"
+        className="w-12 h-12 rounded-full"
+      />
+      <div className="text-white">
+        {messageType === 'text' ? (
+          message
+        ) : (
+          messageType === 'audio' && audioUrl && (
+            <AudioPlayer audioUrl={audioUrl} />
+          )
+        )}
+      </div>
+    </div>
+  );
+};
+
+export const MessageComponentLoading: React.FC = () => {
+
+  return (
+    <div className="flex items-start space-x-4">
+      <img
+        src={"/assets/icons/sumffy.svg"}
+        alt="User"
+        className="w-12 h-12 rounded-full"
+      />
+      <div className="w-full">
+        <Loaders />
+      </div>
+    </div>
+  );
+};
+
+

@@ -67,3 +67,28 @@ body {
   background-clip: text;
   text-fill-color: transparent;
 }
+
+
+/* audioStyles.css */
+.custom-audio {
+  width: 30vw;
+  background-color: #4B37BF;
+  color: white;
+  border-radius: 0.5rem;
+}
+
+.custom-audio::-webkit-media-controls-panel {
+  background-color: #4B37BF;
+  border-radius: 0.5rem;
+}
+
+.custom-audio::-webkit-media-controls-play-button {
+  color: #4B37BF;
+}
+
+.custom-audio::-webkit-media-controls-current-time-display,
+.custom-audio::-webkit-media-controls-time-remaining-display,
+.custom-audio::-webkit-media-controls-timeline,
+.custom-audio::-webkit-media-controls-volume-slider {
+  color: white;
+}

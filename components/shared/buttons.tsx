@@ -50,6 +50,31 @@ export function NoOutlineButtonBig({
   );
 }
 
+export function NoOutlineButtonBigNoGradient({
+  name,
+  type,
+  disabled,
+  loading,
+  onclick,
+}: {
+  name: string;
+  type: "submit" | "button";
+  disabled?: boolean;
+  loading?: boolean;
+  onclick?: () => void;
+}) {
+  return (
+    <button
+      type={type}
+      className="mt-5 bg-[#4B37BF] w-full rounded-lg p-4 flex items-center justify-center text-center"
+      disabled={disabled}
+      onClick={onclick}
+    >
+      {loading ? <RiLoader4Line className="animate-spin text-2xl" /> : name}
+    </button>
+  );
+}
+
 function BtnName({ name }: { name: string }) {
   return (
     <div className="flex items-center justify-center gap-3">

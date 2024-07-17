@@ -2,24 +2,31 @@ import React, { useState } from "react";
 import { AudioRecorder } from 'react-audio-voice-recorder';
 import Image from "next/image";
 import { upload } from "@vercel/blob/client";
+import { MessageComponent, MessageComponentLoading } from "@/components/shared/reusables";
+import { saveMessage, sendMessageToSumffy } from "@/server/actions/chat/chat.action"; // Import your saveMessage function
 
-type Message = {
+export type Message = {
   text?: string;
   type: "text" | "audio";
   audioUrl?: string;
+  userType: 'ai' | 'user';
 };
 
-const Chat: React.FC = () => {
+interface ChatProps {
+  chatId?: string;
+}
+
+const Chat: React.FC<ChatProps> = ({ chatId }) => {
   const [inputText, setInputText] = useState<string>("");
   const [isRecording, setIsRecording] = useState<boolean>(false);
   const [messages, setMessages] = useState<Message[]>([]);
+  const [messageLoading, setMessageLoading] = useState<boolean>(false);
 
   const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInputText(e.target.value);
   };
 
   const uploadAudio = async (blob: Blob) => {
-    // Replace with your actual upload URL and fetch logic
     try {
       const newBlob = await upload("audiorecording.webm", blob, {
         access: 'public',
@@ -40,33 +47,94 @@ const Chat: React.FC = () => {
   const addAudioMessage = async (blob: Blob) => {
     const audioUrl = await uploadAudio(blob);
     console.log('Generated Blob URL:', audioUrl); // Log the Blob URL
-    setMessages(prevMessages => [...prevMessages, { type: 'audio', audioUrl }]);
+
+    try {
+      if (chatId) {
+        const message = await saveMessage({
+          chatId,
+          text: 'Audio message',
+          type: 'audio',
+          audioUrl,
+          userType: 'user',
+        });
+
+        if (message) setMessages(prevMessages => [...prevMessages, message]);
+
+        setMessageLoading(true);
+
+        const reply = await sendMessageToSumffy({
+          chatId,
+          audioUrl: message?.audioUrl,
+          type: 'text',
+          userType: 'ai',
+        })
+
+        if (reply) {
+          setMessageLoading(false);
+          setMessages([...messages, reply]);
+        }
+      }
+
+    } catch (error) {
+      console.error('Failed to save audio message:', error);
+    }
+
     setIsRecording(false);
   };
 
-  const sendMessage = () => {
+  const sendMessage = async () => {
     if (inputText.trim() !== "") {
-      setMessages([...messages, { text: inputText, type: "text" }]);
-      setInputText("");
+      try {
+        if (chatId) {
+          const message = await saveMessage({
+            chatId,
+            text: inputText,
+            type: 'text',
+            userType: 'user',
+          });
+
+          if (message) setMessages([...messages, message]);
+          setInputText("");
+
+          setMessageLoading(true);
+
+          const reply = await sendMessageToSumffy({
+            chatId,
+            userMessage: message?.text,
+            type: 'text',
+            userType: 'ai',
+          })
+
+          if (reply) {
+            setMessageLoading(false);
+            setMessages([...messages, reply]);
+          }
+
+        }
+      } catch (error) {
+        console.error('Failed to save text message:', error);
+      }
     }
   };
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col gap-10">
       <div className="flex-1 overflow-y-auto">
         {messages.map((msg, index) => (
           <div key={index} className="mb-4">
-            {msg.type === "text" ? (
-              <div className="p-3 rounded-lg bg-blue-500 text-white">
-                {msg.text}
-              </div>
-            ) : (
-              <audio controls src={msg.audioUrl} className="w-full">
-                Your browser does not support the audio element.
-              </audio>
-            )}
+            <MessageComponent
+              message={msg.text || 'Audio message'}
+              userType={msg.userType}
+              messageType={msg.type}
+              audioUrl={msg.audioUrl}
+            />
           </div>
         ))}
+        {messageLoading && (
+          <div className="mb-4">
+            <MessageComponentLoading />
+          </div>
+        )}
       </div>
       <div className="relative">
         {!isRecording ? (
@@ -78,15 +146,15 @@ const Chat: React.FC = () => {
               onChange={handleTextChange}
             />
             <button
-              className="absolute right-3 top-3 bg-blue-500 text-white p-2 rounded-full"
+              className="absolute right-3 top-3 text-white p-2"
               onClick={inputText ? sendMessage : undefined}
             >
               {inputText ? (
                 <Image
                   src="/assets/icons/sumffy.svg"
                   alt="send_icon"
-                  height={20}
-                  width={20}
+                  height={40}
+                  width={40}
                 />
               ) : (
                 <AudioRecorder
@@ -96,9 +164,12 @@ const Chat: React.FC = () => {
                     echoCancellation: true,
                   }}
                   classes={{
-                    AudioRecorderStartSaveClass: "bg-blue-500 text-white p-2 rounded-full",
-                    AudioRecorderPauseResumeClass: "bg-blue-500 text-white p-2 rounded-full",
+                    AudioRecorderClass: "bg-[#7F69FF] border-[#7F69FF] text-white",
+                    AudioRecorderStartSaveClass: "bg-[#7F69FF] text-white p-2 rounded-xl border-[#7F69FF]",
+                    AudioRecorderPauseResumeClass: "bg-[#7F69FF] text-white p-2 rounded-xl border-[#7F69FF]",
+                    AudioRecorderTimerClass: "text-white",
                     AudioRecorderStatusClass: "text-white",
+                    AudioRecorderDiscardClass: "text-white",
                   }}
                 />
               )}

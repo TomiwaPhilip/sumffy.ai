@@ -23,7 +23,7 @@ export async function signIn(email: string) {
 
     console.log(token)
 
-    const url = `https://shiny-space-meme-v9r7vxj9q74hxx4-3000.app.github.dev/auth/verify?token=${token}`;
+    const url = `https://bug-free-acorn-wrvqx9prw4j5h5v5q-3000.app.github.dev/auth/verify?token=${token}`;
 
     // Send email with resend.dev
     await sendVerificationRequest({ url: url, email: email });
