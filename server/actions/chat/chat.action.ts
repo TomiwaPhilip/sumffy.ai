@@ -5,12 +5,14 @@ import {
     HarmCategory,
     HarmBlockThreshold,
 } from "@google/generative-ai";
+import axios from "axios";
+import fs from 'fs';
+import path from 'path';
 
 import connectToDB from '@/server/models/database/database';
 import Chat from '@/server/models/schemas/chat';
 import Message from '@/server/models/schemas/message';
 import getSession from '@/server/session/session.action';
-import axios from "axios";
 // import { Message } from "@/components/forms/chat/ChatForm";
 
 export async function createChat() {
@@ -108,6 +110,38 @@ export async function saveMessage(params: SaveMessageParams) {
     }
 }
 
+
+export async function uploadFileToGemini(filePath: string): Promise<string> {
+  const apiKey = process.env.GEMINI_API_KEY;
+  const url = `https://generativelanguage.googleapis.com/v1beta/files:upload?key=${apiKey}`;
+
+  try {
+    const fileContent = fs.readFileSync(filePath, 'utf-8');
+    const fileName = path.basename(filePath);
+
+    const response = await axios.post(url, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      data: {
+        file: {
+          name: fileName,
+          content: fileContent,
+        },
+      },
+    });
+
+    if (response.data && response.data.fileUrl) {
+      return response.data.fileUrl;
+    } else {
+      throw new Error('File URL not found in the response');
+    }
+  } catch (error) {
+    console.error('Error uploading file:', error);
+    throw new Error('Failed to upload file');
+  }
+}
+
 interface SumffyMessageProps {
     userMessage?: string;
     chatId: string;
@@ -141,7 +175,7 @@ export async function sendMessageToSumffy(params: SumffyMessageProps) {
         try {
             const genAI = new GoogleGenerativeAI(apiKey);
             const model = genAI.getGenerativeModel({
-                model: "gemini-1.0-pro",
+                model: "gemini-1.5-pro",
             });
 
             const generationConfig = {
@@ -156,12 +190,20 @@ export async function sendMessageToSumffy(params: SumffyMessageProps) {
                 throw new Error("There is no message from user");
             }
 
+            const personalityUrl = uploadFileToGemini("/utils/sumffy.txt");
+
+            console.log("Personality Url is:", personalityUrl);
+
+            const prompt = `Answer user prompt based on your personality.
+            Here is the link to your personality document: \`${personalityUrl}\`
+            User Prompt: \`${userMessage}\``;
+
             const chatSession = model.startChat({
                 generationConfig,
                 history: [
                     {
                         role: "user",
-                        parts: [{ text: userMessage }],
+                        parts: [{ text: prompt }],
                     },
                 ],
             });

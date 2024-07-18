@@ -85,8 +85,8 @@ export async function verifyUserTokenAndLogin(token: string) {
         let sessionData = {
           userId: existingUser._id.toString(),
           email: existingUser.email,
-          firstName: existingUser.firstname,
-          lastName: existingUser.lastname,
+          firstName: existingUser.firstName,
+          lastName: existingUser.lastName,
           image: existingUser.image, // Initialize image as an empty string
           isPremium: existingUser.premium,
           isOnboarded: existingUser.onboarded,
