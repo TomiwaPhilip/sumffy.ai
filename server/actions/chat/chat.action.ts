@@ -14,6 +14,7 @@ import Chat from '@/server/models/schemas/chat';
 import Message from '@/server/models/schemas/message';
 import getSession from '@/server/session/session.action';
 import { personalityDoc } from "./utils/constants";
+import User from "@/server/models/schemas/user";
 // import { Message } from "@/components/forms/chat/ChatForm";
 
 export async function createChat() {
@@ -143,14 +144,56 @@ export async function uploadFileToGemini(filePath: string): Promise<string> {
     }
 }
 
-export async function getChatHistory(chatId: string, personalityDoc: string, userMessage: string) {
+export async function fetchUserBio() {
+    try {
+        await connectToDB();
+
+        const session = await getSession();
+
+        if (!session || !session.userId) {
+            throw new Error("Unathorixed access!")
+        }
+
+        const userId = session.userId;
+
+        const user: any = await User.findById(userId).select('-email').lean();
+
+        if (!user) {
+            throw new Error('User not found!');
+        }
+
+        // Compile the user bio information into a multiline string
+        const bioInfo = `
+Below are the information about the user chatting with you right now:\n
+
+Firstname: ${user.firstName || 'Not provided'}\n
+Lastname: ${user.lastName || 'Not provided'}\n
+Skills: ${user.skills || 'Not provided'}\n
+Interests: ${user.interests || 'Not provided'}\n
+Job Title: ${user.jobTitle || 'Not provided'}\n
+Relationship Status: ${user.relationshipStatus || 'Not provided'}\n
+Short Term Goal: ${user.shortTermGoal || 'Not provided'}\n
+Long Term Goal: ${user.longTermGoal || 'Not provided'}\n
+Short Bio: ${user.shortBio || 'Not provided'}\n
+Preferences: ${user.preferences || 'Not provided'}\n
+`;
+
+        return bioInfo.trim(); // Trim to remove any extra whitespace
+    } catch (error) {
+        console.error('Error fetching user bio:', error);
+        throw new Error('Error fetching user bio');
+    }
+}
+
+
+export async function getChatHistory(chatId: string, personalityDoc: string, userMessage: string, userBioData: string) {
     const chat = await Chat.findById(chatId).populate('messages');
     let history = [];
 
     if (chat && chat.messages.length > 0) {
         history.push({
             role: "user",
-            parts: [{ text: `Answer user prompt based on your personality.\nHere is your personality document: \`${personalityDoc}\`\nUser Prompt: \`${chat.messages[0].text}\`` }]
+            parts: [{ text: `Answer user prompt based on your personality. Always make reference to the User Bio Data while responding in personalized manner that suits their goals and lifestyle. \nHere is your personality document: \`${personalityDoc}\`\n Here is the bio-data of the user: \`${userBioData}\`\nUser Prompt: \`${chat.messages[0].text}\`` }]
         });
 
         chat.messages.forEach((msg: any) => {
@@ -220,8 +263,8 @@ export async function sendMessageToSumffy(params: SumffyMessageProps) {
             if (!userMessage) {
                 throw new Error("There is no message from user");
             }
-
-            const chatHistory = await getChatHistory(chatId, personalityDoc, userMessage);
+            const userBioData = await fetchUserBio();
+            const chatHistory = await getChatHistory(chatId, personalityDoc, userMessage, userBioData);
 
             const chatSession = model.startChat({
                 generationConfig,
