@@ -190,7 +190,7 @@ export async function sendMessageToSumffy(params: SumffyMessageProps) {
                 throw new Error("There is no message from user");
             }
 
-            const personalityUrl = uploadFileToGemini("/public/utils/sumffy.txt");
+            const personalityUrl = uploadFileToGemini("public/utils/sumffy.txt");
 
             console.log("Personality Url is:", personalityUrl);
 
