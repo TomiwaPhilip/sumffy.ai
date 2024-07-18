@@ -1,16 +1,23 @@
 import React, { useEffect, useState } from "react";
-import { AudioRecorder } from 'react-audio-voice-recorder';
+import { AudioRecorder } from "react-audio-voice-recorder";
 import Image from "next/image";
-import { MessageComponent, MessageComponentLoading } from "@/components/shared/reusables";
+import {
+  MessageComponent,
+  MessageComponentLoading,
+} from "@/components/shared/reusables";
 import { fetchChatMessages } from "@/server/actions/chat/chat.action"; // Import the server action
-import { saveMessage, sendMessageToSumffy } from "@/server/actions/chat/chat.action";
+import {
+  saveMessage,
+  sendMessageToSumffy,
+} from "@/server/actions/chat/chat.action";
 import { upload } from "@vercel/blob/client";
+import axios from "axios";
 
 export type Message = {
   text?: string;
   type: "text" | "audio";
   audioUrl?: string;
-  userType: 'ai' | 'user';
+  userType: "ai" | "user";
 };
 
 interface ChatProps {
@@ -27,7 +34,9 @@ const Chat: React.FC<ChatProps> = ({ chatId }) => {
     if (chatId) {
       fetchChatMessages(chatId)
         .then((messages) => setMessages(messages))
-        .catch((error) => console.error("Failed to fetch chat messages:", error));
+        .catch((error) =>
+          console.error("Failed to fetch chat messages:", error),
+        );
     }
   }, [chatId]);
 
@@ -38,54 +47,62 @@ const Chat: React.FC<ChatProps> = ({ chatId }) => {
   const uploadAudio = async (blob: Blob) => {
     try {
       const newBlob = await upload("audiorecording.webm", blob, {
-        access: 'public',
-        handleUploadUrl: '/api/avatar/upload',
-        contentType: 'webm',
+        access: "public",
+        handleUploadUrl: "/api/avatar/upload",
+        contentType: "webm",
       });
 
       if (newBlob.url) {
         return newBlob.url; // Assuming the response contains the uploaded file URL
       } else {
-        console.error('Upload failed');
+        console.error("Upload failed");
       }
     } catch (error) {
-      console.error('Upload error:', error);
+      console.error("Upload error:", error);
     }
   };
 
   const addAudioMessage = async (blob: Blob) => {
     const audioUrl = await uploadAudio(blob);
-    console.log('Generated Blob URL:', audioUrl); // Log the Blob URL
+    console.log("Generated Blob URL:", audioUrl); // Log the Blob URL
+
+    // Get user IP address from the API route
+    const ipResponse = await axios.get(
+      "https://sumffy-ai.vercel.app/api/ip-address",
+    );
+    const userIp = ipResponse.data.ip;
+    console.log("userIp:", userIp);
 
     try {
       if (chatId) {
         const message = await saveMessage({
           chatId,
-          text: 'Audio message',
-          type: 'audio',
+          text: "Audio message",
+          type: "audio",
           audioUrl,
-          userType: 'user',
+          userType: "user",
         });
 
         if (message) {
-          setMessages(prevMessages => [...prevMessages, message]);
+          setMessages((prevMessages) => [...prevMessages, message]);
           setMessageLoading(true);
 
           const reply = await sendMessageToSumffy({
             chatId,
             audioUrl: message?.audioUrl,
-            type: 'text',
-            userType: 'ai',
+            type: "text",
+            userType: "ai",
+            ipAddress: userIp,
           });
 
           if (reply) {
             setMessageLoading(false);
-            setMessages(prevMessages => [...prevMessages, reply]);
+            setMessages((prevMessages) => [...prevMessages, reply]);
           }
         }
       }
     } catch (error) {
-      console.error('Failed to save audio message:', error);
+      console.error("Failed to save audio message:", error);
     }
 
     setIsRecording(false);
@@ -93,17 +110,24 @@ const Chat: React.FC<ChatProps> = ({ chatId }) => {
 
   const sendMessage = async () => {
     if (inputText.trim() !== "") {
+      // Get user IP address from the API route
+      const ipResponse = await axios.get(
+        "https://sumffy-ai.vercel.app/api/ip-address",
+      );
+      const userIp = ipResponse.data.ip;
+      console.log("userIp:", userIp);
+
       try {
         if (chatId) {
           const message = await saveMessage({
             chatId,
             text: inputText,
-            type: 'text',
-            userType: 'user',
+            type: "text",
+            userType: "user",
           });
 
           if (message) {
-            setMessages(prevMessages => [...prevMessages, message]);
+            setMessages((prevMessages) => [...prevMessages, message]);
             setInputText("");
 
             setMessageLoading(true);
@@ -111,18 +135,19 @@ const Chat: React.FC<ChatProps> = ({ chatId }) => {
             const reply = await sendMessageToSumffy({
               chatId,
               userMessage: message?.text,
-              type: 'text',
-              userType: 'ai',
+              type: "text",
+              userType: "ai",
+              ipAddress: userIp,
             });
 
             if (reply) {
               setMessageLoading(false);
-              setMessages(prevMessages => [...prevMessages, reply]);
+              setMessages((prevMessages) => [...prevMessages, reply]);
             }
           }
         }
       } catch (error) {
-        console.error('Failed to save text message:', error);
+        console.error("Failed to save text message:", error);
       }
     }
   };
@@ -133,7 +158,7 @@ const Chat: React.FC<ChatProps> = ({ chatId }) => {
         {messages.map((msg, index) => (
           <div key={index} className="mb-4">
             <MessageComponent
-              message={msg.text || 'Audio message'}
+              message={msg.text || "Audio message"}
               userType={msg.userType}
               messageType={msg.type}
               audioUrl={msg.audioUrl}
@@ -174,9 +199,12 @@ const Chat: React.FC<ChatProps> = ({ chatId }) => {
                     echoCancellation: true,
                   }}
                   classes={{
-                    AudioRecorderClass: "bg-[#7F69FF] border-[#7F69FF] text-white",
-                    AudioRecorderStartSaveClass: "bg-[#7F69FF] text-white p-2 rounded-xl border-[#7F69FF]",
-                    AudioRecorderPauseResumeClass: "bg-[#7F69FF] text-white p-2 rounded-xl border-[#7F69FF]",
+                    AudioRecorderClass:
+                      "bg-[#7F69FF] border-[#7F69FF] text-white",
+                    AudioRecorderStartSaveClass:
+                      "bg-[#7F69FF] text-white p-2 rounded-xl border-[#7F69FF]",
+                    AudioRecorderPauseResumeClass:
+                      "bg-[#7F69FF] text-white p-2 rounded-xl border-[#7F69FF]",
                     AudioRecorderTimerClass: "text-white",
                     AudioRecorderStatusClass: "text-white",
                     AudioRecorderDiscardClass: "text-white",
