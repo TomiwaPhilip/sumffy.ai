@@ -151,7 +151,7 @@ export async function uploadFileToGemini(filePath: string): Promise<string> {
 export async function getUserLocation(mapboxAccessToken: string) {
     try {
         // Get user IP address from the API route
-        const ipResponse = await axios.get(`${process.env.VERCEL_URL}`);
+        const ipResponse = await axios.get("https://sumffy-ai.vercel.app/api/ip-address");
         const userIp = ipResponse.data.ip;
         console.log("userIp:", userIp);
 
