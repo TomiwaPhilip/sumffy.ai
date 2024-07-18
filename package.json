@@ -11,6 +11,7 @@
   "dependencies": {
     "@google/generative-ai": "^0.15.0",
     "@vercel/blob": "^0.23.4",
+    "axios": "^1.7.2",
     "google-auth-library": "^9.11.0",
     "iron-session": "^8.0.2",
     "mongoose": "^8.5.0",

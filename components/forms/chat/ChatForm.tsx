@@ -58,23 +58,23 @@ const Chat: React.FC<ChatProps> = ({ chatId }) => {
           userType: 'user',
         });
 
-        if (message) setMessages(prevMessages => [...prevMessages, message]);
+        if (message) {
+          setMessages(prevMessages => [...prevMessages, message]);
+          setMessageLoading(true);
 
-        setMessageLoading(true);
+          const reply = await sendMessageToSumffy({
+            chatId,
+            audioUrl: message?.audioUrl,
+            type: 'text',
+            userType: 'ai',
+          });
 
-        const reply = await sendMessageToSumffy({
-          chatId,
-          audioUrl: message?.audioUrl,
-          type: 'text',
-          userType: 'ai',
-        })
-
-        if (reply) {
-          setMessageLoading(false);
-          setMessages([...messages, reply]);
+          if (reply) {
+            setMessageLoading(false);
+            setMessages(prevMessages => [...prevMessages, reply]);
+          }
         }
       }
-
     } catch (error) {
       console.error('Failed to save audio message:', error);
     }
@@ -93,23 +93,24 @@ const Chat: React.FC<ChatProps> = ({ chatId }) => {
             userType: 'user',
           });
 
-          if (message) setMessages([...messages, message]);
-          setInputText("");
+          if (message) {
+            setMessages(prevMessages => [...prevMessages, message]);
+            setInputText("");
 
-          setMessageLoading(true);
+            setMessageLoading(true);
 
-          const reply = await sendMessageToSumffy({
-            chatId,
-            userMessage: message?.text,
-            type: 'text',
-            userType: 'ai',
-          })
+            const reply = await sendMessageToSumffy({
+              chatId,
+              userMessage: message?.text,
+              type: 'text',
+              userType: 'ai',
+            });
 
-          if (reply) {
-            setMessageLoading(false);
-            setMessages([...messages, reply]);
+            if (reply) {
+              setMessageLoading(false);
+              setMessages(prevMessages => [...prevMessages, reply]);
+            }
           }
-
         }
       } catch (error) {
         console.error('Failed to save text message:', error);

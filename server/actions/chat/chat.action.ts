@@ -10,6 +10,7 @@ import connectToDB from '@/server/models/database/database';
 import Chat from '@/server/models/schemas/chat';
 import Message from '@/server/models/schemas/message';
 import getSession from '@/server/session/session.action';
+import axios from "axios";
 // import { Message } from "@/components/forms/chat/ChatForm";
 
 export async function createChat() {
@@ -131,6 +132,9 @@ export async function sendMessageToSumffy(params: SumffyMessageProps) {
         if (!apiKey) {
             throw new Error("You do not have API to Gemini");
         }
+
+        const response = await axios.get("https://api.ipify.org?format=json");
+        console.log("Your IP address is:", response.data.ip);
 
         let result;
 
