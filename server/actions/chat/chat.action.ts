@@ -153,10 +153,12 @@ export async function getUserLocation(mapboxAccessToken: string) {
         // Get user IP address from the API route
         const ipResponse = await axios.get(`${process.env.VERCEL_URL}`);
         const userIp = ipResponse.data.ip;
+        console.log("userIp:", userIp);
 
         // Use the IP address to get geolocation data
         const response = await axios.get(`https://api.ipgeolocation.io/ipgeo?apiKey=${process.env.IPGEOLOCATION_API_KEY}&ip=${userIp}`);
         const { latitude, longitude } = response.data;
+        console.log("location:", latitude, longitude )
 
         // Reverse geocode to get place name
         const reverseGeocodeResponse = await axios.get(`https://api.mapbox.com/geocoding/v5/mapbox.places/${longitude},${latitude}.json?access_token=${mapboxAccessToken}`);
