@@ -369,6 +369,7 @@ export async function getChatHistory(
   personalityDoc: string,
   userMessage: string,
   userBioData: string,
+  userMetaData: string,
 ) {
   const chat = await Chat.findById(chatId).populate("messages");
   let history = [];
@@ -378,7 +379,7 @@ export async function getChatHistory(
       role: "user",
       parts: [
         {
-          text: `Answer user prompt based on your personality. Always make reference to the User Bio Data while responding in personalized manner that suits their goals and lifestyle. \nHere is your personality document: \`${personalityDoc}\`\n Here is the bio-data of the user: \`${userBioData}\`\nUser Prompt: \`${chat.messages[0].text}\``,
+          text: `Answer user prompt based on your personality. Always make reference to the User Bio Data and User Meta Data while responding in personalized manner that suits their goals and lifestyle. \nHere is your personality document: \`${personalityDoc}\`\n Here is the bio-data of the user: \`${userBioData}\`\n Here is the metadata of the user: \`${userMetaData}\`\nUser Prompt: \`${chat.messages[0].text}\``,
         },
       ],
     });
@@ -394,7 +395,7 @@ export async function getChatHistory(
       role: "user",
       parts: [
         {
-          text: `Answer user prompt based on your personality. Always make reference to the User Bio Data while responding in personalized manner that suits their goals and lifestyle. \nHere is your personality document: \`${personalityDoc}\`\n Here is the bio-data of the user: \`${userBioData}\`\nUser Prompt: \`${userMessage}\``,
+          text: `Answer user prompt based on your personality. Always make reference to the User Bio Data and User Meta Data while responding in personalized manner that suits their goals and lifestyle. \nHere is your personality document: \`${personalityDoc}\`\n Here is the bio-data of the user: \`${userBioData}\`\n Here is the metadata of the user: \`${userMetaData}\`\nUser Prompt:  \`${userMessage}\``,
         },
       ],
     });
@@ -462,6 +463,7 @@ export async function sendMessageToSumffy(params: SumffyMessageProps) {
         personalityDoc,
         userMessage,
         userBioData,
+        userMetaData,
       );
 
       const chatSession = model.startChat({
