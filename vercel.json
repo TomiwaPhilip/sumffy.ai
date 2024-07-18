@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "server/actions/**/*.ts": {
+      "maxDuration": 60
+    }
+  }
+}
