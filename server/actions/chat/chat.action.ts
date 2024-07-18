@@ -13,6 +13,7 @@ import connectToDB from '@/server/models/database/database';
 import Chat from '@/server/models/schemas/chat';
 import Message from '@/server/models/schemas/message';
 import getSession from '@/server/session/session.action';
+import { personalityDoc } from "./utils/constants";
 // import { Message } from "@/components/forms/chat/ChatForm";
 
 export async function createChat() {
@@ -190,12 +191,12 @@ export async function sendMessageToSumffy(params: SumffyMessageProps) {
                 throw new Error("There is no message from user");
             }
 
-            const personalityUrl = uploadFileToGemini("public/utils/sumffy.txt");
+            // const personalityUrl = uploadFileToGemini("public/utils/sumffy.txt");
 
-            console.log("Personality Url is:", personalityUrl);
+            console.log("Personality Doc is:", personalityDoc);
 
             const prompt = `Answer user prompt based on your personality.
-            Here is the link to your personality document: \`${personalityUrl}\`
+            Here is your personality document: \`${personalityDoc}\`
             User Prompt: \`${userMessage}\``;
 
             const chatSession = model.startChat({
