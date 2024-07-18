@@ -8,6 +8,7 @@ import { signOut } from "@/server/actions/auth/login.action";
 import { usePathname } from "next/navigation";
 import { useSession } from "./session";
 import AudioPlayer from "../forms/chat/AudioPlayer";
+import { marked } from 'marked';
 
 export function Nav() {
   const pathname = usePathname();
@@ -223,6 +224,9 @@ export function IntroCards({ headingText, paragraph }: IntroCardProps) {
   );
 }
 
+const convertMarkdownToHtml = (markdown: string) => {
+  return marked(markdown);
+};
 
 interface MessageComponentProps {
   message: string;
@@ -256,7 +260,7 @@ export const MessageComponent: React.FC<MessageComponentProps> = ({ message, use
       />
       <div className="text-white">
         {messageType === 'text' ? (
-          message
+          <div dangerouslySetInnerHTML={{ __html: convertMarkdownToHtml(message) }} />
         ) : (
           messageType === 'audio' && audioUrl && (
             <AudioPlayer audioUrl={audioUrl} />
