@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { AudioRecorder } from 'react-audio-voice-recorder';
 import Image from "next/image";
-import { upload } from "@vercel/blob/client";
 import { MessageComponent, MessageComponentLoading } from "@/components/shared/reusables";
-import { saveMessage, sendMessageToSumffy } from "@/server/actions/chat/chat.action"; // Import your saveMessage function
+import { fetchChatMessages } from "@/server/actions/chat/chat.action"; // Import the server action
+import { saveMessage, sendMessageToSumffy } from "@/server/actions/chat/chat.action";
+import { upload } from "@vercel/blob/client";
 
 export type Message = {
   text?: string;
@@ -21,6 +22,14 @@ const Chat: React.FC<ChatProps> = ({ chatId }) => {
   const [isRecording, setIsRecording] = useState<boolean>(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [messageLoading, setMessageLoading] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (chatId) {
+      fetchChatMessages(chatId)
+        .then((messages) => setMessages(messages))
+        .catch((error) => console.error("Failed to fetch chat messages:", error));
+    }
+  }, [chatId]);
 
   const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInputText(e.target.value);

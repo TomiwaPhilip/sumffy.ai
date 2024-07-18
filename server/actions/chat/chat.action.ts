@@ -113,7 +113,7 @@ interface SumffyMessageProps {
     chatId: string;
     type: 'text' | 'audio';
     audioUrl?: string;
-    userType: 'ai' | 'user'; 
+    userType: 'ai' | 'user';
 }
 
 export async function sendMessageToSumffy(params: SumffyMessageProps) {
@@ -152,7 +152,7 @@ export async function sendMessageToSumffy(params: SumffyMessageProps) {
                 responseMimeType: "text/plain",
             };
 
-            if(!userMessage) {
+            if (!userMessage) {
                 throw new Error("There is no message from user");
             }
 
@@ -205,5 +205,40 @@ export async function sendMessageToSumffy(params: SumffyMessageProps) {
     } catch (error: any) {
         console.error("Error in sendMessageToSumffy:", error);
         throw new Error("Error in sendMessageToSumffy: " + error.message);
+    }
+}
+
+export type Message = {
+    text?: string;
+    type: "text" | "audio";
+    audioUrl?: string;
+    userType: 'ai' | 'user';
+};
+
+export async function fetchChatMessages(chatId: string): Promise<Message[]> {
+    try {
+        await connectToDB();
+
+        const chat = await Chat.findById(chatId).populate({
+            path: "messages",
+            model: Message,
+        });
+
+        if (!chat) {
+            throw new Error("Chat not found");
+        }
+
+        // Map the messages to the required format
+        const messages: Message[] = chat.messages.map((msg: any) => ({
+            text: msg.text,
+            type: msg.type,
+            audioUrl: msg.audioUrl,
+            userType: msg.userType,
+        }));
+
+        return messages;
+    } catch (error) {
+        console.error("Error fetching chat messages:", error);
+        throw new Error("Failed to fetch chat messages");
     }
 }
