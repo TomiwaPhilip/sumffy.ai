@@ -113,34 +113,65 @@ export async function saveMessage(params: SaveMessageParams) {
 
 
 export async function uploadFileToGemini(filePath: string): Promise<string> {
-  const apiKey = process.env.GEMINI_API_KEY;
-  const url = `https://generativelanguage.googleapis.com/v1beta/files:upload?key=${apiKey}`;
+    const apiKey = process.env.GEMINI_API_KEY;
+    const url = `https://generativelanguage.googleapis.com/v1beta/files:upload?key=${apiKey}`;
 
-  try {
-    const fileContent = fs.readFileSync(filePath, 'utf-8');
-    const fileName = path.basename(filePath);
+    try {
+        const fileContent = fs.readFileSync(filePath, 'utf-8');
+        const fileName = path.basename(filePath);
 
-    const response = await axios.post(url, {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      data: {
-        file: {
-          name: fileName,
-          content: fileContent,
-        },
-      },
+        const response = await axios.post(url, {
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            data: {
+                file: {
+                    name: fileName,
+                    content: fileContent,
+                },
+            },
+        });
+
+        if (response.data && response.data.fileUrl) {
+            return response.data.fileUrl;
+        } else {
+            throw new Error('File URL not found in the response');
+        }
+    } catch (error) {
+        console.error('Error uploading file:', error);
+        throw new Error('Failed to upload file');
+    }
+}
+
+export async function getChatHistory(chatId: string, personalityDoc: string, userMessage: string) {
+    const chat = await Chat.findById(chatId).populate('messages');
+    let history = [];
+
+    if (chat && chat.messages.length > 0) {
+        history.push({
+            role: "user",
+            parts: [{ text: `Answer user prompt based on your personality.\nHere is your personality document: \`${personalityDoc}\`\nUser Prompt: \`${chat.messages[0].text}\`` }]
+        });
+
+        chat.messages.forEach((msg: any) => {
+            history.push({
+                role: msg.userType === 'user' ? 'user' : 'model',
+                parts: [{ text: msg.text }]
+            });
+        });
+    } else {
+        history.push({
+            role: "user",
+            parts: [{ text: `Answer user prompt based on your personality.\nHere is your personality document: \`${personalityDoc}\`\nUser Prompt: \`${userMessage}\`` }]
+        });
+    }
+
+    history.push({
+        role: "user",
+        parts: [{ text: userMessage }]
     });
 
-    if (response.data && response.data.fileUrl) {
-      return response.data.fileUrl;
-    } else {
-      throw new Error('File URL not found in the response');
-    }
-  } catch (error) {
-    console.error('Error uploading file:', error);
-    throw new Error('Failed to upload file');
-  }
+    return history;
 }
 
 interface SumffyMessageProps {
@@ -182,7 +213,6 @@ export async function sendMessageToSumffy(params: SumffyMessageProps) {
             const generationConfig = {
                 temperature: 1,
                 topP: 0.95,
-                // topK: 64,
                 maxOutputTokens: 2048,
                 responseMimeType: "text/plain",
             };
@@ -191,27 +221,12 @@ export async function sendMessageToSumffy(params: SumffyMessageProps) {
                 throw new Error("There is no message from user");
             }
 
-            // const personalityUrl = uploadFileToGemini("public/utils/sumffy.txt");
-
-            console.log("Personality Doc is:", personalityDoc);
-
-            const prompt = `Answer user prompt based on your personality.\n
-            Here is your personality document: \`${personalityDoc}\`\n
-            User Prompt: \`${userMessage}\``;
+            const chatHistory = await getChatHistory(chatId, personalityDoc, userMessage);
 
             const chatSession = model.startChat({
                 generationConfig,
-                history: [
-                    {
-                        role: "user",
-                        parts: [{ text: prompt }],
-                    },
-                ],
+                history: chatHistory,
             });
-
-            if (!userMessage) {
-                throw new Error("User message is not provided");
-            }
 
             result = await chatSession.sendMessage(userMessage);
             console.log("Gemini API response:", result.response.text());
