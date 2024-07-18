@@ -195,8 +195,8 @@ export async function sendMessageToSumffy(params: SumffyMessageProps) {
 
             console.log("Personality Doc is:", personalityDoc);
 
-            const prompt = `Answer user prompt based on your personality.
-            Here is your personality document: \`${personalityDoc}\`
+            const prompt = `Answer user prompt based on your personality.\n
+            Here is your personality document: \`${personalityDoc}\`\n
             User Prompt: \`${userMessage}\``;
 
             const chatSession = model.startChat({
