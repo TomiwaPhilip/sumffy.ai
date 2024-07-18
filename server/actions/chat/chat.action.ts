@@ -116,7 +116,7 @@ export async function uploadFileToGemini(filePath: string): Promise<string> {
   const url = `https://generativelanguage.googleapis.com/v1beta/files:upload?key=${apiKey}`;
 
   try {
-    const fileContent = fs.readFileSync(process.cwd() + filePath, 'utf-8');
+    const fileContent = fs.readFileSync(filePath, 'utf-8');
     const fileName = path.basename(filePath);
 
     const response = await axios.post(url, {
