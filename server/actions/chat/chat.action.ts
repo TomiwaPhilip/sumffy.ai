@@ -176,14 +176,14 @@ export async function sendMessageToSumffy(params: SumffyMessageProps) {
         try {
             const genAI = new GoogleGenerativeAI(apiKey);
             const model = genAI.getGenerativeModel({
-                model: "gemini-1.5-pro",
+                model: "gemini-1.0-pro",
             });
 
             const generationConfig = {
                 temperature: 1,
                 topP: 0.95,
-                topK: 64,
-                maxOutputTokens: 8192,
+                // topK: 64,
+                maxOutputTokens: 2048,
                 responseMimeType: "text/plain",
             };
 
