@@ -225,6 +225,12 @@ export function IntroCards({ headingText, paragraph }: IntroCardProps) {
 }
 
 const convertMarkdownToHtml = (markdown: string) => {
+  marked.setOptions({
+    breaks: true,
+    gfm: true,
+    pedantic: false,
+    silent: false,
+  });
   return marked(markdown);
 };
 
