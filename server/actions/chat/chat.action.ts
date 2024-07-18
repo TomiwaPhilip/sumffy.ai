@@ -8,6 +8,9 @@ import {
 import axios from "axios";
 import fs from 'fs';
 import path from 'path';
+import ngeohash from 'ngeohash';
+import { ipAddress, geolocation } from '@vercel/functions';
+import type { NextRequest } from 'next/server';
 
 import connectToDB from '@/server/models/database/database';
 import Chat from '@/server/models/schemas/chat';
@@ -15,6 +18,7 @@ import Message from '@/server/models/schemas/message';
 import getSession from '@/server/session/session.action';
 import { personalityDoc } from "./utils/constants";
 import User from "@/server/models/schemas/user";
+
 // import { Message } from "@/components/forms/chat/ChatForm";
 
 export async function createChat() {
@@ -144,6 +148,167 @@ export async function uploadFileToGemini(filePath: string): Promise<string> {
     }
 }
 
+export async function getUserLocation(mapboxAccessToken: string) {
+    try {
+        // Get user IP address from the API route
+        const ipResponse = await axios.get(`${process.env.VERCEL_URL}/api/get-ip`);
+        const userIp = ipResponse.data.ip;
+
+        // Use the IP address to get geolocation data
+        const response = await axios.get(`https://api.ipgeolocation.io/ipgeo?apiKey=${process.env.IPGEOLOCATION_API_KEY}&ip=${userIp}`);
+        const { latitude, longitude } = response.data;
+
+        // Reverse geocode to get place name
+        const reverseGeocodeResponse = await axios.get(`https://api.mapbox.com/geocoding/v5/mapbox.places/${longitude},${latitude}.json?access_token=${mapboxAccessToken}`);
+        const placeName = reverseGeocodeResponse.data.features[0].place_name;
+
+        return {
+            latitude,
+            longitude,
+            placeName,
+        };
+    } catch (error: any) {
+        console.error("Error getting user location:", error);
+        throw new Error("Error getting user location: " + error.message);
+    }
+}
+
+
+export async function getPlacesOfInterest(location: { longitude: number, latitude: number }, interests: string[], mapboxAccessToken: string) {
+    try {
+        const interestsQuery = interests.join(',');
+        const response = await axios.get(`https://api.mapbox.com/geocoding/v5/mapbox.places/${interestsQuery}.json?proximity=${location.longitude},${location.latitude}&access_token=${mapboxAccessToken}`);
+        if (response.data && response.data.features && response.data.features.length > 0) {
+            const places = response.data.features.map((place: any) => ({
+                name: place.text,
+                address: place.place_name,
+                coordinates: place.center,
+            }));
+            return {
+                location,
+                places
+            };
+        } else {
+            throw new Error("No places of interest found!");
+        }
+    } catch (error: any) {
+        console.error("Error in getPlacesOfInterest:", error);
+        throw new Error("Error in getPlacesOfInterest: " + error.message);
+    }
+}
+
+interface Location {
+    placeName: string;
+    latitude: number;
+    longitude: number;
+}
+
+export async function fetchEvents(location: Location) {
+    try {
+        const geoHash = ngeohash.encode(location.latitude, location.longitude);
+
+        const response = await axios.get('https://app.ticketmaster.com/discovery/v2/events.json', {
+            params: {
+                geoPoint: geoHash,
+                radius: '10',
+                unit: 'km',
+                sort: 'date,asc',
+                size: '5', // Limit to top 5 events
+                apikey: process.env.TICKETMASTER_API_KEY
+            }
+        });
+
+        const events = response.data._embedded?.events.map((event: any) => ({
+            name: event.name,
+            description: event.info || 'No description available',
+            start: event.dates.start.localDate,
+            url: event.url,
+        })) || [];
+
+        return events;
+    } catch (error: any) {
+        console.error("Error fetching events:", error);
+        throw new Error("Error fetching events: " + error.message);
+    }
+}
+
+
+export async function findPOIsForUser() {
+    try {
+        const session = await getSession();
+
+        if (!session || !session.userId) {
+            throw new Error("User is unauthorized!");
+        }
+
+        const mapboxAccessToken = process.env.MAPBOX_ACCESS_TOKEN;
+        if (!mapboxAccessToken) {
+            throw new Error("Mapbox Access Token is not provided!");
+        }
+
+        const location = await getUserLocation(mapboxAccessToken);
+        console.log("User location:", location);
+
+        // Inline code to fetch user bio data and interests
+        const user = await User.findById(session.userId);
+        if (!user) {
+            throw new Error("User not found!");
+        }
+
+        const interests = user.interests ? user.interests.split(',') : [];
+        if (interests.length === 0) {
+            throw new Error("User has no specified interests!");
+        }
+
+        const placesOfInterest = await getPlacesOfInterest(location, interests, mapboxAccessToken);
+        console.log("Places of interest:", placesOfInterest);
+
+        const events = await fetchEvents(location);
+        console.log("Events around user location:", events);
+
+        const result = {
+            location: location.placeName,
+            placesOfInterest: placesOfInterest.places.map((place: any) => ({
+                name: place.name,
+                address: place.address,
+                coordinates: `Latitude: ${place.coordinates[1]}, Longitude: ${place.coordinates[0]}`,
+            })),
+            events: events.map((event: any) => ({
+                name: event.name,
+                description: event.description,
+                start: event.start,
+                url: event.url,
+            }))
+        };
+
+        console.log("Results:", result);
+
+        // Formatting result for Gemini API
+        let formattedResult = `User Location: ${location.placeName}\n\nPlaces of Interest:\n`;
+
+        formattedResult += placesOfInterest.places
+            .map((place: any, index: number) => {
+                return `${index + 1}. ${place.name}\n   Address: ${place.address}\n   Coordinates: Latitude: ${place.coordinates[1]}, Longitude: ${place.coordinates[0]}`;
+            })
+            .join('\n\n');
+
+        formattedResult += `\n\nEvents Around User Location:\n`;
+
+        formattedResult += events
+            .map((event: any, index: number) => {
+                return `${index + 1}. ${event.name}\n   Description: ${event.description}\n   Start: ${event.start}\n   URL: ${event.url}`;
+            })
+            .join('\n\n');
+        
+        console.log("Formatted result for gemini", formattedResult)
+
+        return formattedResult;
+    } catch (error: any) {
+        console.error("Error in findPOIsForUser:", error);
+        throw new Error("Error in findPOIsForUser: " + error.message);
+    }
+}
+
 export async function fetchUserBio() {
     try {
         await connectToDB();
@@ -205,7 +370,7 @@ export async function getChatHistory(chatId: string, personalityDoc: string, use
     } else {
         history.push({
             role: "user",
-            parts: [{ text: `Answer user prompt based on your personality.\nHere is your personality document: \`${personalityDoc}\`\nUser Prompt: \`${userMessage}\`` }]
+            parts: [{ text: `Answer user prompt based on your personality. Always make reference to the User Bio Data while responding in personalized manner that suits their goals and lifestyle. \nHere is your personality document: \`${personalityDoc}\`\n Here is the bio-data of the user: \`${userBioData}\`\nUser Prompt: \`${userMessage}\`` }]
         });
     }
 
@@ -264,6 +429,7 @@ export async function sendMessageToSumffy(params: SumffyMessageProps) {
                 throw new Error("There is no message from user");
             }
             const userBioData = await fetchUserBio();
+            const userMetaData = await findPOIsForUser();
             const chatHistory = await getChatHistory(chatId, personalityDoc, userMessage, userBioData);
 
             const chatSession = model.startChat({
