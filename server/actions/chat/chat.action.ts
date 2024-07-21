@@ -141,62 +141,59 @@ export async function uploadFileToGemini(filePath: string): Promise<string> {
   }
 }
 
-export async function getUserLocation(
-  mapboxAccessToken: string,
-  latitude: string,
-  longitude: string,
-) {
-  try {
-    // // Use the IP address to get geolocation data
-    // const response = await axios.get(
-    //   `https://api.ipgeolocation.io/ipgeo?apiKey=${process.env.IPGEOLOCATION_API_KEY}&ip=${ipAddress}`,
-    // );
-    // const { latitude, longitude } = response.data;
-    // console.log("location:", latitude, longitude);
-
-    // Reverse geocode to get place name
-    const reverseGeocodeResponse = await axios.get(
-      `https://api.mapbox.com/geocoding/v5/mapbox.places/${longitude},${latitude}.json?access_token=${mapboxAccessToken}`,
-    );
-    const placeName = reverseGeocodeResponse.data.features[0].place_name;
-
-    return {
-      latitude,
-      longitude,
-      placeName,
-    };
-  } catch (error: any) {
-    console.error("Error getting user location:", error);
-    throw new Error("Error getting user location: " + error.message);
-  }
+interface PlacesLocation {
+  city: string;
+  country: string;
+  flag: string;
+  countryRegion: string;
+  region: string;
 }
 
 export async function getPlacesOfInterest(
-  location: { longitude: string; latitude: string },
+  location: PlacesLocation,
   interests: string[],
   mapboxAccessToken: string,
 ) {
   try {
     const interestsQuery = interests.join(",");
-    const response = await axios.get(
-      `https://api.mapbox.com/geocoding/v5/mapbox.places/${interestsQuery}.json?proximity=${location.longitude},${location.latitude}&access_token=${mapboxAccessToken}`,
+
+    // Geocode the address to get the coordinates
+    const geocodeResponse = await axios.get(
+      `https://api.mapbox.com/geocoding/v5/mapbox.places/${location.city},${location.countryRegion},${location.country}.json?access_token=${mapboxAccessToken}`,
     );
+
     if (
-      response.data &&
-      response.data.features &&
-      response.data.features.length > 0
+      geocodeResponse.data &&
+      geocodeResponse.data.features &&
+      geocodeResponse.data.features.length > 0
     ) {
-      const places = response.data.features.map((place: any) => ({
-        name: place.text,
-        address: place.place_name,
-        coordinates: place.center,
-      }));
-      return {
-        location,
-        places,
-      };
+      const coordinates = geocodeResponse.data.features[0].center;
+
+      // Use the coordinates to get places of interest
+      const poiResponse = await axios.get(
+        `https://api.mapbox.com/geocoding/v5/mapbox.places/${interestsQuery}.json?proximity=${coordinates[0]},${coordinates[1]}&access_token=${mapboxAccessToken}`,
+      );
+
+      if (
+        poiResponse.data &&
+        poiResponse.data.features &&
+        poiResponse.data.features.length > 0
+      ) {
+        const places = poiResponse.data.features.map((place: any) => ({
+          name: place.text,
+          address: place.place_name,
+          coordinates: place.center,
+        }));
+        console.log("location from getPOi:", location);
+        return {
+          location,
+          places,
+        };
+      } else {
+        throw new Error("No places of interest found!");
+      }
     } else {
-      throw new Error("No places of interest found!");
+      throw new Error("Could not geocode the address!");
     }
   } catch (error: any) {
     console.error("Error in getPlacesOfInterest:", error);
@@ -206,8 +203,8 @@ export async function getPlacesOfInterest(
 
 interface Location {
   placeName: string;
-  latitude: string;
-  longitude: string;
+  latitude: number;
+  longitude: number;
 }
 
 export async function fetchEvents(location: Location) {
@@ -243,7 +240,7 @@ export async function fetchEvents(location: Location) {
   }
 }
 
-export async function findPOIsForUser(longitude: string, latitude: string) {
+export async function findPOIsForUser(location: PlacesLocation) {
   try {
     const session = await getSession();
 
@@ -256,14 +253,9 @@ export async function findPOIsForUser(longitude: string, latitude: string) {
       throw new Error("Mapbox Access Token is not provided!");
     }
 
-    const location = await getUserLocation(
-      mapboxAccessToken,
-      latitude,
-      longitude,
-    );
     console.log("User location:", location);
 
-    // Inline code to fetch user bio data and interests
+    // Fetch user bio data and interests
     const user = await User.findById(session.userId);
     if (!user) {
       throw new Error("User not found!");
@@ -281,11 +273,17 @@ export async function findPOIsForUser(longitude: string, latitude: string) {
     );
     console.log("Places of interest:", placesOfInterest);
 
-    const events = await fetchEvents(location);
+    const coordinates = {
+      placeName: location.city,
+      latitude: placesOfInterest.places[0].coordinates[1],
+      longitude: placesOfInterest.places[0].coordinates[0],
+    };
+
+    const events = await fetchEvents(coordinates);
     console.log("Events around user location:", events);
 
     const result = {
-      location: location.placeName,
+      location: location.city,
       placesOfInterest: placesOfInterest.places.map((place: any) => ({
         name: place.name,
         address: place.address,
@@ -302,7 +300,7 @@ export async function findPOIsForUser(longitude: string, latitude: string) {
     console.log("Results:", result);
 
     // Formatting result for Gemini API
-    let formattedResult = `User Location: ${location.placeName}\n\nPlaces of Interest:\n`;
+    let formattedResult = `User Location: ${location.city}\n\nPlaces of Interest:\n`;
 
     formattedResult += placesOfInterest.places
       .map((place: any, index: number) => {
