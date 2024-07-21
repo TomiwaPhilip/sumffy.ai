@@ -9,7 +9,6 @@ import axios from "axios";
 import fs from "fs";
 import path from "path";
 import ngeohash from "ngeohash";
-import type { NextRequest } from "next/server";
 
 import connectToDB from "@/server/models/database/database";
 import Chat from "@/server/models/schemas/chat";
@@ -415,7 +414,7 @@ interface SumffyMessageProps {
   type: "text" | "audio";
   audioUrl?: string;
   userType: "ai" | "user";
-  ipAddress: string;
+  userMetaData: string;
 }
 
 export async function sendMessageToSumffy(params: SumffyMessageProps) {
@@ -428,7 +427,7 @@ export async function sendMessageToSumffy(params: SumffyMessageProps) {
     }
 
     const userId = session.userId;
-    const { chatId, userMessage } = params;
+    const { chatId, userMessage, userMetaData } = params;
     const apiKey = process.env.GEMINI_API_KEY;
 
     if (!apiKey) {
@@ -457,7 +456,7 @@ export async function sendMessageToSumffy(params: SumffyMessageProps) {
         throw new Error("There is no message from user");
       }
       const userBioData = await fetchUserBio();
-      const userMetaData = await findPOIsForUser(params.ipAddress);
+      // const userMetaData = await findPOIsForUser(params.ipAddress);
       const chatHistory = await getChatHistory(
         chatId,
         personalityDoc,
