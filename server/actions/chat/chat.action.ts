@@ -301,7 +301,10 @@ export async function findPOIsForUser(ipAddress: string) {
 
     formattedResult += placesOfInterest.places
       .map((place: any, index: number) => {
-        return `${index + 1}. ${place.name}\n   Address: ${place.address}\n   Coordinates: Latitude: ${place.coordinates[1]}, Longitude: ${place.coordinates[0]}`;
+        return `${index + 1}. ${place.name}\n   
+        Address: ${place.address}\n   
+        Coordinates: Latitude: ${place.coordinates[1]}, 
+        Longitude: ${place.coordinates[0]}`;
       })
       .join("\n\n");
 
@@ -379,7 +382,8 @@ export async function getChatHistory(
       parts: [
         {
           text: `Answer user prompt based on your personality. 
-          Always make reference to the User Bio Data and User Meta Data while responding in personalized manner that suits their goals and lifestyle.
+          Always make reference to the User Bio Data and User Meta Data while responding 
+          in personalized manner that suits their goals and lifestyle.
           Answer should be markdown format that could be converted to a very good looking HTML.
           \nHere is your personality document: \`${personalityDoc}\`
           \n Here is the bio-data of the user: \`${userBioData}\`
@@ -399,7 +403,13 @@ export async function getChatHistory(
       role: "user",
       parts: [
         {
-          text: `Answer user prompt based on your personality. Always make reference to the User Bio Data and User Meta Data while responding in personalized manner that suits their goals and lifestyle. \nHere is your personality document: \`${personalityDoc}\`\n Here is the bio-data of the user: \`${userBioData}\`\n Here is the metadata of the user: \`${userMetaData}\`\nUser Prompt:  \`${userMessage}\``,
+          text: `Answer user prompt based on your personality. 
+          Always make reference to the User Bio Data and User Meta Data while 
+          responding in personalized manner that suits their goals and lifestyle. 
+          Answer should be markdown format that could be converted to a very good looking HTML.
+          \nHere is your personality document: \`${personalityDoc}\`
+          \n Here is the bio-data of the user: \`${userBioData}\`
+          \n Here is the metadata of the user: \`${userMetaData}\`\nUser Prompt:  \`${userMessage}\``,
         },
       ],
     });
