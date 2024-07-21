@@ -162,6 +162,8 @@ export async function getPlacesOfInterest(
       `https://api.mapbox.com/geocoding/v5/mapbox.places/${location.city},${location.countryRegion},${location.country}.json?access_token=${mapboxAccessToken}`,
     );
 
+    console.log(geocodeResponse);
+
     if (
       geocodeResponse.data &&
       geocodeResponse.data.features &&
