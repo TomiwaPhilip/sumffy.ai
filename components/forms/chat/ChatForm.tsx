@@ -36,6 +36,7 @@ const Chat: React.FC<ChatProps> = ({ chatId }) => {
   const [notification, setNotification] = useState(false);
   const [isError, setIsError] = useState(false);
   const [statusMessage, setStatusMessage] = useState("");
+  const [disable, setDisable] = useState(false);
 
   useEffect(() => {
     if (chatId) {
@@ -77,6 +78,7 @@ const Chat: React.FC<ChatProps> = ({ chatId }) => {
   };
 
   const addAudioMessage = async (blob: Blob) => {
+    setDisable(true);
     try {
       const audioUrl = await uploadAudio(blob);
       console.log("Generated Blob URL:", audioUrl);
@@ -132,10 +134,12 @@ const Chat: React.FC<ChatProps> = ({ chatId }) => {
       setStatusMessage("Failed to handle audio message.");
     } finally {
       setIsRecording(false);
+      setDisable(false);
     }
   };
 
   const sendMessage = async () => {
+    setDisable(true);
     if (inputText.trim() !== "") {
       try {
         const ipResponse = await axios.get(
@@ -170,14 +174,17 @@ const Chat: React.FC<ChatProps> = ({ chatId }) => {
               if (reply) {
                 setMessageLoading(false);
                 setMessages((prevMessages) => [...prevMessages, reply]);
+                setDisable(false);
               } else {
                 setMessageLoading(false);
                 setIsError(true);
+                setDisable(true);
                 setStatusMessage("Failed to get Sumffy reply.");
                 throw new Error("Failed to get Sumffy reply.");
               }
             } else {
               setIsError(true);
+              setDisable(true);
               setStatusMessage("Failed to save text message.");
               throw new Error("Failed to save text message.");
             }
@@ -224,6 +231,7 @@ const Chat: React.FC<ChatProps> = ({ chatId }) => {
               <button
                 className="absolute right-3 top-3 text-white p-2"
                 onClick={inputText ? sendMessage : undefined}
+                disabled={disable}
               >
                 {inputText ? (
                   <Image
