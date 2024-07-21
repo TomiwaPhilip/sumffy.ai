@@ -378,7 +378,12 @@ export async function getChatHistory(
       role: "user",
       parts: [
         {
-          text: `Answer user prompt based on your personality. Always make reference to the User Bio Data and User Meta Data while responding in personalized manner that suits their goals and lifestyle. \nHere is your personality document: \`${personalityDoc}\`\n Here is the bio-data of the user: \`${userBioData}\`\n Here is the metadata of the user: \`${userMetaData}\`\nUser Prompt: \`${chat.messages[0].text}\``,
+          text: `Answer user prompt based on your personality. 
+          Always make reference to the User Bio Data and User Meta Data while responding in personalized manner that suits their goals and lifestyle.
+          Answer should be markdown format that could be converted to a very good looking HTML.
+          \nHere is your personality document: \`${personalityDoc}\`
+          \n Here is the bio-data of the user: \`${userBioData}\`
+          \n Here is the metadata of the user: \`${userMetaData}\`\nUser Prompt: \`${chat.messages[0].text}\``,
         },
       ],
     });
