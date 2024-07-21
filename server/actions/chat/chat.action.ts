@@ -142,16 +142,17 @@ export async function uploadFileToGemini(filePath: string): Promise<string> {
 }
 
 export async function getUserLocation(
-  ipAddress: string,
   mapboxAccessToken: string,
+  latitude: string,
+  longitude: string,
 ) {
   try {
-    // Use the IP address to get geolocation data
-    const response = await axios.get(
-      `https://api.ipgeolocation.io/ipgeo?apiKey=${process.env.IPGEOLOCATION_API_KEY}&ip=${ipAddress}`,
-    );
-    const { latitude, longitude } = response.data;
-    console.log("location:", latitude, longitude);
+    // // Use the IP address to get geolocation data
+    // const response = await axios.get(
+    //   `https://api.ipgeolocation.io/ipgeo?apiKey=${process.env.IPGEOLOCATION_API_KEY}&ip=${ipAddress}`,
+    // );
+    // const { latitude, longitude } = response.data;
+    // console.log("location:", latitude, longitude);
 
     // Reverse geocode to get place name
     const reverseGeocodeResponse = await axios.get(
@@ -171,7 +172,7 @@ export async function getUserLocation(
 }
 
 export async function getPlacesOfInterest(
-  location: { longitude: number; latitude: number },
+  location: { longitude: string; latitude: string },
   interests: string[],
   mapboxAccessToken: string,
 ) {
@@ -205,8 +206,8 @@ export async function getPlacesOfInterest(
 
 interface Location {
   placeName: string;
-  latitude: number;
-  longitude: number;
+  latitude: string;
+  longitude: string;
 }
 
 export async function fetchEvents(location: Location) {
@@ -242,7 +243,7 @@ export async function fetchEvents(location: Location) {
   }
 }
 
-export async function findPOIsForUser(ipAddress: string) {
+export async function findPOIsForUser(longitude: string, latitude: string) {
   try {
     const session = await getSession();
 
@@ -255,7 +256,11 @@ export async function findPOIsForUser(ipAddress: string) {
       throw new Error("Mapbox Access Token is not provided!");
     }
 
-    const location = await getUserLocation(ipAddress, mapboxAccessToken);
+    const location = await getUserLocation(
+      mapboxAccessToken,
+      latitude,
+      longitude,
+    );
     console.log("User location:", location);
 
     // Inline code to fetch user bio data and interests

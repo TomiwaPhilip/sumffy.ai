@@ -86,8 +86,8 @@ const Chat: React.FC<ChatProps> = ({ chatId }) => {
       const ipResponse = await axios.get(
         "https://sumffy-ai.vercel.app/api/ip-address",
       );
-      const userIp = ipResponse.data.ip;
-      const userMetaData = await findPOIsForUser(userIp);
+      const { latitude, longitude } = ipResponse.data;
+      const userMetaData = await findPOIsForUser(latitude, longitude);
 
       if (userMetaData) {
         if (chatId) {
@@ -145,8 +145,8 @@ const Chat: React.FC<ChatProps> = ({ chatId }) => {
         const ipResponse = await axios.get(
           "https://sumffy-ai.vercel.app/api/ip-address",
         );
-        const userIp = ipResponse.data.ip;
-        const userMetaData = await findPOIsForUser(userIp);
+        const { latitude, longitude } = ipResponse.data;
+        const userMetaData = await findPOIsForUser(latitude, longitude);
 
         if (userMetaData) {
           if (chatId) {
