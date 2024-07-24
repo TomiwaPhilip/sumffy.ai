@@ -17,7 +17,7 @@ export default function Home({ chatId }: HomeProps) {
 
   return (
     <div className="">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col items-start justify-center gap-4 sm:flex-row sm:gap-10 mt-10">
         <div className="">
           <h1 className="text-gradient text-[36px] font-extrabold">
             Hello, {firstName} {lastName}
@@ -38,7 +38,7 @@ export default function Home({ chatId }: HomeProps) {
           </button>
         </div>
       </div>
-      <div className="flex items-start justify-center gap-10 mt-10">
+      <div className="flex flex-col items-start justify-center gap-4 sm:flex-row sm:gap-10 mt-10">
         {CardData.map((card, index) => (
           <IntroCards
             key={index}

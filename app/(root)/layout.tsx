@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 import "../globals.css";
-import { Nav } from "@/components/shared/reusables";
+import { MobileNav, Nav } from "@/components/shared/reusables";
 
 
 export const metadata: Metadata = {
@@ -16,8 +16,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="bg-[#01020C] text-white px-[6rem] py-[4rem]">
+      <body className="bg-[#01020C] text-white px-[1rem] py-[1rem] sm:py-[4rem] sm:px-[6rem]">
         <Nav />
+        <MobileNav />
         <main className="mt-[4rem]">
           {children}
         </main>
